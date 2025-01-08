@@ -28,6 +28,13 @@ from datetime import datetime
 
 @app.route('/add_author', methods=['GET', 'POST'])
 def add_author():
+    """
+    Handles the route for adding a new author to the database.
+
+    If the request method is POST, the author details are collected
+    from the form and added to the database. If successful, the user is
+    redirected to the homepage.
+    """
     if request.method == 'POST':
         name = request.form['name']
         birth_date_str = request.form['birthdate']
@@ -46,6 +53,14 @@ def add_author():
 
 @app.route('/add_book', methods=['GET', 'POST'])
 def add_book():
+    """
+    Handles the route for adding a new book to the database.
+
+    Displays a form with available authors if the request method is GET.
+    If the method is POST, the book details are collected from the form,
+    and the new book is added to the database. A success message is shown
+    after the book is added.
+    """
     authors = Author.query.all()
     if request.method == 'POST':
         title = request.form['title']
@@ -64,13 +79,22 @@ def add_book():
 
 @app.route('/')
 def home():
+    """
+    Displays the homepage with a list of all books in the database.
+    """
     books = Book.query.all()
-
     return render_template('home.html', books=books)
 
 
 @app.route('/sort_books/<sort_by>')
 def sort_books(sort_by):
+    """
+    Sorts the list of books based on the selected criteria (title or author).
+
+    The 'sort_by' parameter determines the sorting order:
+    - 'title' will sort by the book title.
+    - 'author' will sort by the author's name.
+    """
     if sort_by == 'title':
         books = Book.query.order_by(Book.title).all()
     elif sort_by == 'author':
@@ -83,6 +107,12 @@ def sort_books(sort_by):
 
 @app.route('/search_books', methods=['GET'])
 def search_books():
+    """
+    Handles the search functionality for books.
+
+    Searches for books based on the title. If a search query is provided,
+    it filters the books based on the query and displays the results.
+    """
     search_query = request.args.get('search_query')
     if search_query:
         books = Book.query.filter(Book.title.ilike(f'%{search_query}%')).all()

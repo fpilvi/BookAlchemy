@@ -8,17 +8,28 @@
 <body>
     <h1>Welcome to the Library</h1>
 
-    <!-- Search form -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul>
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
     <form method="GET" action="{{ url_for('search_books') }}">
         <input type="text" name="search_query" placeholder="Search books..." required>
         <button type="submit">Search</button>
     </form>
 
-    <!-- Display books or no results -->
     {% if books %}
         <ul>
             {% for book in books %}
-                <li>{{ book.title }} by {{ book.author.name }}</li>
+                <li>
+                    {{ book.title }} by {{ book.author.name }}
+                    <a href="{{ url_for('delete_book', book_id=book.id) }}">Delete</a>
+                </li>
             {% endfor %}
         </ul>
     {% else %}

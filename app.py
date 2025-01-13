@@ -1,12 +1,16 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 from data_models import db, Author, Book
+
 
 """
 Main Flask application file for the library system.
 """
 
 app = Flask(__name__)
+
+app.secret_key = os.urandom(24)
+
 
 """
 Configure the database URI and initialize the app with SQLAlchemy.
@@ -122,5 +126,35 @@ def search_books():
     return render_template('home.html', books=books)
 
 
+@app.route('/book/<int:book_id>/delete', methods=['GET'])
+def delete_book(book_id):
+    """
+    Deletes a specific book from the database.
+
+    After deleting the book, if the author no longer has any books in the library,
+    the author will be deleted as well.
+    """
+    try:
+        book = Book.query.get(book_id)
+        if not book:
+            return "Book not found", 404
+
+        author_id = book.author_id
+        db.session.delete(book)
+
+        remaining_books = Book.query.filter_by(author_id=author_id).all()
+        if not remaining_books:
+            author = Author.query.get(author_id)
+            db.session.delete(author)
+
+        db.session.commit()
+
+        flash("Book successfully deleted.", 'success')
+        return redirect(url_for('home'))
+    except Exception as e:
+        flash(f"An error occurred: {str(e)}", 'error')
+        return redirect(url_for('home'))
+
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5002)
